@@ -14,21 +14,27 @@ producer = KafkaProducer(
 )
 
 API_KEY = os.getenv('API_KEY') #Your API Key 
-URL = "https://api.football-data.org/v4/matches"
+BASE_URL = "https://api.football-data.org/v4/competitions/{}/matches?status=FINISHED"
 
 headers = {"X-Auth-Token":API_KEY}
 
+COMPETITIONS = ["PL", "PD", "BL1", "SA", "FL1"]
+
 def fetch_and_send():
-    response = requests.get(URL, headers=headers)
-    if response.status_code == 200:
-        matches = response.json().get("matches", [])
-        for match in matches:
-            producer.send('football-matches', value=match)
-            print(f'Enviado: {match['homeTeam']['name']} vs {match['awayTeam']['name']}')
-        producer.flush()
-        print(f'Total Enviados: {len(matches)} partidos')
-    else:
-        print(f'Error: {response.status_code}')
+    total = 0
+    for comp in COMPETITIONS:
+        URL = BASE_URL.format(comp)
+        response = requests.get(URL, headers=headers)
+        if response.status_code == 200:
+            matches = response.json().get("matches", [])
+            for match in matches:
+                producer.send('football-matches', value=match)
+            total += len(matches)
+            producer.flush()
+            print(f'Total matches: {len(matches)}')
+        else:
+            print(f'Error: {response.status_code}')
+    print(f'Total Matches sent: {total}')
 
 while True:
     fetch_and_send()
