@@ -22,20 +22,20 @@ Football-Data API → Apache Kafka → Databricks (Bronze → Silver → Gold) �
         sports-pipeline/
         |
         ├── docker/
-            └── docker-compose.yml       # Kafka + Zookeeper setup
+        |   └── docker-compose.yml       # Kafka + Zookeeper setup
         |
         ├── ingestion/
-            │   ├── producer.py              # Fetches data from API and sends to Kafka
-            │   ├── consumer.py              # Kafka consumer for debugging
-            │   └── kafka_to_json.py         # Saves Kafka messages to JSON files
+        |   │   ├── producer.py              # Fetches data from API and sends to Kafka
+        |   │   ├── consumer.py              # Kafka consumer for debugging
+        |   │   └── kafka_to_json.py         # Saves Kafka messages to JSON files
         |
         ├── transformations/
-            │   └── (PySpark transformations via Databricks notebooks)
+        |   │   └── (PySpark transformations via Databricks notebooks)
         |
         ├── notebooks/
-            │   ├── 01_ingest_matches_bronze.py    # Raw data ingestion
-            │   ├── 02_transform_matches_silver.py # Data cleaning and enrichment
-            │   └── 03_aggregate_matches_gold.py   # Business aggregations
+        |   │   ├── 01_ingest_matches_bronze.py    # Raw data ingestion
+        |   │   ├── 02_transform_matches_silver.py # Data cleaning and enrichment
+        |   │   └── 03_aggregate_matches_gold.py   # Business aggregations
         |
         ├── .env.example
         ├── requirements.txt
