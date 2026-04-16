@@ -1,3 +1,6 @@
 kafka-python
 requests
 python-dotenv
+streamlit
+polars
+plotly

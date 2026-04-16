@@ -2,6 +2,10 @@
 
 A real-time data engineering pipeline that ingests live football match data from the Football-Data.org API, streams it through Apache Kafka, and processes it in Databricks following the Medallion Architecture.
 
+## 📸 Dashboard Preview
+
+![Dashboard Preview](assets/dashboard_preview.png)
+
 ## 🏗️ Architecture
 
 Football-Data API → Apache Kafka → Databricks (Bronze → Silver → Gold) → Dashboard
@@ -12,7 +16,7 @@ Football-Data API → Apache Kafka → Databricks (Bronze → Silver → Gold) �
 - **Ingestion**: Python, Apache Kafka, REST API
 - **Processing**: Apache Spark (PySpark), Databricks, Delta Tables, Apache Iceberg
 - **Orchestration**: Apache Airflow and Databricks Jobs
-- **Visualization**: Streamlit *(coming soon)*
+- **Visualization**: Streamlit, Plotly
 - **Infrastructure**: Docker, Docker Compose
 - **Cloud**: Databricks Community Edition
 
@@ -61,18 +65,17 @@ This project supports two deployment modes depending on available infrastructure
 |-----------|------|
 | Kafka | Docker (local) |
 | Ingestion | JSON files as intermediate layer |
-| Orchestration | Databricks Jobs | Apache Airflow |
+| Orchestration | Databricks Jobs | 
 
 ### Production
 | Component | Tool |
 |-----------|------|
 | Kafka | Confluent Cloud / Azure Event Hubs |
 | Ingestion | Spark Structured Streaming directly into Databricks |
-| Orchestration | Apache Airflow with `DatabricksRunNowOperator` | Databricks Jobs |
+| Orchestration | Apache Airflow or Databricks Jobs |
 
 The production variant files are included in the repository for reference:
-- `transformations/streaming_variant.py` — Spark Structured Streaming ingestion
-- `notebooks/01_ingest_matches_bronze_streaming.py` — Streaming Bronze notebook
+- `notebooks/streaming-variant-ingestion/ingest_matches_bronze_streaming.py` — Streaming Bronze notebook
 - `orchestration/sports_pipeline_dag.py` — Airflow DAG
 
 ## 🚀 Getting Started
@@ -114,9 +117,24 @@ python ingestion/kafka_to_json.py
 
 ### 6. Upload JSON to Databricks
 Upload the generated file from `data/` to your Databricks volume and run the notebooks in order:
-1. `01_ingest_matches_bronze.py`
-2. `02_transform_matches_silver.py`
-3. `03_aggregate_matches_gold.py`
+1. `ingest_matches_bronze.py`
+2. `transform_matches_silver.py`
+3. `aggregate_matches_gold.py`
+
+### 7. Do the Orchestration with Databricks Jobs
+
+![Job run](assets/Run_pipeline.png)
+
+![Job Structure](assets/structure_job.png)
+
+## 📊 Running the Dashboard
+
+```bash
+streamlit run dashboard/app.py
+```
+
+Then open your browser at `http://localhost:8501`
+
 
 ## 📊 Data Coverage
 
