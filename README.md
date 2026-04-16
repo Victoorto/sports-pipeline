@@ -11,7 +11,7 @@ Football-Data API → Apache Kafka → Databricks (Bronze → Silver → Gold) �
 
 - **Ingestion**: Python, Apache Kafka, REST API
 - **Processing**: Apache Spark (PySpark), Databricks, Delta Tables, Apache Iceberg
-- **Orchestration**: Apache Airflow *(coming soon)*
+- **Orchestration**: Apache Airflow and Databricks Jobs
 - **Visualization**: Streamlit *(coming soon)*
 - **Infrastructure**: Docker, Docker Compose
 - **Cloud**: Databricks Community Edition
@@ -22,21 +22,22 @@ Football-Data API → Apache Kafka → Databricks (Bronze → Silver → Gold) �
         sports-pipeline/
         |
         ├── docker/
-        |   └── docker-compose.yml       # Kafka + Zookeeper setup
+        |   └── docker-compose.yml              # Kafka + Zookeeper setup
         |
         ├── ingestion/
-        |   │   ├── producer.py              # Fetches data from API and sends to Kafka
-        |   │   ├── consumer.py              # Kafka consumer for debugging
-        |   │   └── kafka_to_json.py         # Saves Kafka messages to JSON files
-        |
-        ├── transformations/
-        |   │   └── (PySpark transformations via Databricks notebooks)
+        |   ├── producer.py                 # Fetches data from API and sends to Kafka
+        |   ├── consumer.py                 # Kafka consumer for debugging
+        |   └── kafka_to_json.py            # Saves Kafka messages to JSON files
         |
         ├── notebooks/
-        |   │   ├── 01_ingest_matches_bronze.py    # Raw data ingestion
-        |   │   ├── 02_transform_matches_silver.py # Data cleaning and enrichment
-        |   │   └── 03_aggregate_matches_gold.py   # Business aggregations
-        |
+        |   ├── ingest_matches_bronze.py    # Raw data ingestion
+        |   ├── transform_matches_silver.py # Data cleaning and enrichment
+        |   └── aggregate_matches_gold.py   # Business aggregations
+        |   └── streaming-variant-ingestion/
+        |       └── ingest_matches_bronze_streaming.py        # Spark Structured Streaming (production variant)
+        |      
+        ├── Orchestration/
+        |   └──sports-airflow-dags.py
         ├── .env.example
         ├── requirements.txt
         └── README.md
@@ -50,6 +51,29 @@ Football-Data API → Apache Kafka → Databricks (Bronze → Silver → Gold) �
 | Gold | `football_wins_gold` | Teams ranked by total wins |
 | Gold | `football_goals_gold` | Goals and averages per competition |
 | Gold | `football_results_gold` | Distribution of match results |
+
+## 🔀 Infrastructure Variants
+
+This project supports two deployment modes depending on available infrastructure:
+
+### Community Edition / Local
+| Component | Tool |
+|-----------|------|
+| Kafka | Docker (local) |
+| Ingestion | JSON files as intermediate layer |
+| Orchestration | Databricks Jobs | Apache Airflow |
+
+### Production
+| Component | Tool |
+|-----------|------|
+| Kafka | Confluent Cloud / Azure Event Hubs |
+| Ingestion | Spark Structured Streaming directly into Databricks |
+| Orchestration | Apache Airflow with `DatabricksRunNowOperator` | Databricks Jobs |
+
+The production variant files are included in the repository for reference:
+- `transformations/streaming_variant.py` — Spark Structured Streaming ingestion
+- `notebooks/01_ingest_matches_bronze_streaming.py` — Streaming Bronze notebook
+- `orchestration/sports_pipeline_dag.py` — Airflow DAG
 
 ## 🚀 Getting Started
 
@@ -89,21 +113,10 @@ python ingestion/kafka_to_json.py
 ```
 
 ### 6. Upload JSON to Databricks
-Upload the generated file from `data/` to your Databricks volume and run the notebooks in order.
-
-## 🔄 Streaming Variant
-
-This project includes a streaming variant for environments with full Databricks access (Azure/AWS/GCP). Instead of saving to JSON, Kafka connects directly to Databricks using Spark Structured Streaming:
-
-```python
-df_stream = spark.readStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", "your-kafka-server:9092") \
-    .option("subscribe", "football-matches") \
-    .load()
-```
-
-See `transformations/streaming_variant.py` for the full implementation.
+Upload the generated file from `data/` to your Databricks volume and run the notebooks in order:
+1. `01_ingest_matches_bronze.py`
+2. `02_transform_matches_silver.py`
+3. `03_aggregate_matches_gold.py`
 
 ## 📊 Data Coverage
 

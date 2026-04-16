@@ -16,4 +16,3 @@ for message in consumer:
     away = match['awayTeam']['name']
     status = match['status']
     date = match['utcDate'][:10]
-    print(f"{date} | {home} vs {away} | Status: {status}")
